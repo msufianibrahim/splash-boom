@@ -383,3 +383,10 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 }
 .pad button:active { transform: translateY(4px); box-shadow: 0 1px 0 #7d9cc8; }
 .pad.busy { opacity: .5; pointer-events: none; }
+.card-art, .card-title { white-space: nowrap; }
+@media (max-width: 600px) {
+  #mode .cards { gap: 8px; flex-wrap: nowrap; }
+  #mode .card { width: 31vw; padding: 16px 4px 14px; border-radius: 22px; }
+  #mode .card-art { font-size: 7vw; }
+  #mode .card-title { font-size: 4.2vw; }
+}
