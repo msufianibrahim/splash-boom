@@ -200,21 +200,22 @@ function showPass(i, then) {
 }
 
 function beginBattle() {
-  G.turn = 0; G.busy = false;
+  G.turn = G.first || 0; G.busy = false;
   renderBattle();
   show('battle');
-  setTimeout(() => callout('Ready... FIRE! 🎯'), 300);
+  if (cur().remote) remoteTurn();
+  else setTimeout(() => callout('Ready... FIRE! 🎯'), 300);
 }
 
 function renderBattle() {
   const A = cur(), D = opp();
   document.body.dataset.team = A.team;
   $('#passBtn').classList.add('hidden');
-  if (A.robot) {
-    $('#turnText').innerHTML = `<span class="av">🤖</span> Robot's turn`;
+  if (A.robot || A.remote) {
+    $('#turnText').innerHTML = `<span class="av">${A.avatar}</span> ${esc(A.name)}'s turn`;
     $('#bigLabel').textContent = `🛡️ Your ships`;
     renderBoard($('#bigBoard'), D, 'own');
-    $('#miniLabel').textContent = `Robot's sea`;
+    $('#miniLabel').textContent = `${A.name}'s sea`;
     renderBoard($('#miniBoard'), A, 'target');
     renderTracker(A);
   } else {
@@ -231,16 +232,23 @@ function renderBattle() {
 
 async function shoot(r, c) {
   const g = G, A = cur(), D = opp(), big = $('#bigBoard');
-  const view = A.robot ? 'own' : 'target';
-  await fxBall(big, r, c);
-  if (G !== g) return null;
-  const res = fire(D, r, c);
+  const view = (A.robot || A.remote) ? 'own' : 'target';
+  let res;
+  if (D.remote) {
+    [res] = await Promise.all([remoteFire(r, c).catch(() => null), fxBall(big, r, c)]);
+  } else {
+    res = fire(D, r, c);
+    if (A.remote) Net.send({ t: 'result', r, c, kind: res.kind, e: res.e || null,
+      ship: res.kind === 'sunk' ? { type: res.ship.type, r: res.ship.r, c: res.ship.c, dir: res.ship.dir } : null });
+    await fxBall(big, r, c);
+  }
+  if (G !== g || !res) return null;
   A.shots++;
   renderBoard(big, D, view, { newCell: [r, c], reveal: res.kind === 'sunk' ? res.ship : null });
   if (res.kind === 'miss') {
     fxSplash(big, r, c);
     Sound.splash();
-    callout(A.robot ? 'Splash! Robot missed!' : `Splash! <span class="em">${res.e}</span>`, 'miss');
+    callout(A.robot || A.remote ? `Splash! ${esc(A.name)} missed!` : `Splash! <span class="em">${res.e}</span>`, 'miss');
     await wait(1100);
   } else {
     A.hits++;
@@ -248,7 +256,7 @@ async function shoot(r, c) {
     Sound.boom();
     navigator.vibrate?.(120);
     callout(res.kind === 'sunk' ? 'SUNK! 💥' : 'HIT! 💥', 'hit');
-    if (!A.robot) renderTracker(D);
+    if (!A.robot && !A.remote) renderTracker(D);
     await wait(res.kind === 'sunk' ? 900 : 1100);
     if (res.kind === 'sunk') await sunkBanner(res.ship, A);
   }
@@ -261,6 +269,7 @@ async function afterShot(res) {
   if (D.ships.every(s => s.sunk)) { await wait(300); return showWin(); }
   if (res.kind !== 'miss' && G.extra) {
     if (A.robot) { await wait(300); return robotShot(); }
+    if (A.remote) return remoteTurn();
     callout('Shoot again! 🎯', 'again');
     G.busy = false;
     return;
@@ -269,13 +278,14 @@ async function afterShot(res) {
 }
 
 async function endTurn() {
-  if (G.mode === 'robot') {
+  if (G.mode !== 'friend') {
     const g = G;
     await wait(200);
     if (G !== g) return;
     G.turn = 1 - G.turn;
     renderBattle();
     if (cur().robot) robotShot();
+    else if (cur().remote) remoteTurn();
     else { G.busy = false; setTimeout(() => callout('Your turn! 🎯'), 250); }
     return;
   }
@@ -331,8 +341,8 @@ function robotPick(D) {
 
 function sunkBanner(ship, A) {
   const name = SHIPS[ship.type].name;
-  const text = A.robot ? `Robot sank your ${name}!`
-    : G.mode === 'robot' ? `You sank the ${name}!` : `${esc(A.name)} sank the ${name}!`;
+  const text = A.robot || A.remote ? `${esc(A.name)} sank your ${name}!`
+    : G.mode !== 'friend' ? `You sank the ${name}!` : `${esc(A.name)} sank the ${name}!`;
   const el = $('#banner');
   $('.banner-inner', el).innerHTML = `
     <div class="banner-sea"><div class="banner-ship" style="--len:${ship.len}">${topShip(ship.type, ship.len, 'h')}</div>${burst(8, 'bub', 0.6, 1.4)}</div>
@@ -348,9 +358,9 @@ function sunkBanner(ship, A) {
 
 function showWin() {
   const W = cur();
-  const robotWon = W.robot;
-  $('#winIcon').textContent = robotWon ? '🤖' : '🏆';
-  $('#winText').textContent = robotWon ? 'Robot wins this time!' : `${W.name} wins!`;
+  const robotWon = W.robot || W.remote;
+  $('#winIcon').textContent = robotWon ? W.avatar : '🏆';
+  $('#winText').textContent = W.robot ? 'Robot wins this time!' : W.remote ? `${W.name} wins this time!` : `${W.name} wins!`;
   $('#winStats').textContent = robotWon ? 'So close! Try again, Captain!' : `🎯 ${W.shots} shots   💥 ${W.hits} hits`;
   $('#winShip').innerHTML = heroShip();
   document.body.dataset.team = W.team;
@@ -468,7 +478,7 @@ function init() {
   $$('#seaSeg button').forEach(b => b.addEventListener('click', () => { settings.sea = b.dataset.sea; saveSettings(); renderMode(); }));
   $('#extraToggle').addEventListener('click', () => { settings.extra = !settings.extra; saveSettings(); renderMode(); });
   [0, 1].forEach(i => $('#name' + i).addEventListener('input', e => { settings.names[i] = e.target.value; saveSettings(); }));
-  $('#startBtn').addEventListener('click', startGame);
+  $('#startBtn').addEventListener('click', () => settings.mode === 'online' ? openLobby() : startGame());
 
   const sb = $('#setupBoard');
   sb.addEventListener('pointerdown', setupDown);
@@ -484,6 +494,7 @@ function init() {
   $('#readyBtn').addEventListener('click', () => {
     const i = G.setupIdx;
     G.setupIdx = null;
+    if (G.mode === 'online') return onlineReady();
     if (G.mode === 'robot') return beginBattle();
     if (i === 0) showPass(1, () => showSetup(1));
     else showPass(0, beginBattle);
@@ -505,17 +516,19 @@ function init() {
     showPass(next, () => { G.turn = next; renderBattle(); show('battle'); G.busy = false; });
   });
 
-  $('#againBtn').addEventListener('click', startGame);
+  $('#againBtn').addEventListener('click', () => G && G.mode === 'online' ? startOnlineRound() : startGame());
+  $$('[data-go="title"]').forEach(b => b.addEventListener('click', leaveOnline));
   $$('.quit-btn').forEach(b => b.addEventListener('click', () => $('#quitModal').classList.add('show')));
   $('#quitNo').addEventListener('click', () => $('#quitModal').classList.remove('show'));
   $('#quitYes').addEventListener('click', () => {
     $('#quitModal').classList.remove('show');
     if (G) { G.busy = true; G.setupIdx = null; }
     G = null;
+    leaveOnline();
     document.body.dataset.team = 'blue';
     show('title');
   });
 
+  initOnline();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js');
 }
-init();

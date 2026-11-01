@@ -49,7 +49,11 @@
       </button>
       <button class="card" data-mode="friend">
         <span class="card-art">🦈 <small>vs</small> 🐙</span>
-        <span class="card-title">2 Players</span>
+        <span class="card-title">1 Tablet</span>
+      </button>
+      <button class="card" data-mode="online">
+        <span class="card-art">📱 <small>vs</small> 📱</span>
+        <span class="card-title">2 Phones</span>
       </button>
     </div>
 
@@ -67,6 +71,33 @@
     </div>
 
     <button class="btn big green" id="startBtn">⚓ START</button>
+  </section>
+
+  <!-- ONLINE LOBBY -->
+  <section id="online" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" id="onlineBack" aria-label="Back">⬅</button>
+      <h2>2 Phones</h2>
+      <span class="icon-btn ghost"></span>
+    </div>
+    <div class="lobby-step" id="lobbyChoose">
+      <div class="cards">
+        <button class="card" id="hostBtn"><span class="card-art">✨</span><span class="card-title">Make a game</span></button>
+        <button class="card" id="joinBtn"><span class="card-art">🔑</span><span class="card-title">Join a game</span></button>
+      </div>
+      <p class="hint">Works best with both phones on the same WiFi</p>
+    </div>
+    <div class="lobby-step" id="lobbyHost">
+      <p class="lobby-p">Tell your friend this code</p>
+      <div class="code" id="hostCode"></div>
+      <p class="lobby-p waiting" id="hostStatus">Waiting for friend</p>
+    </div>
+    <div class="lobby-step" id="lobbyJoin">
+      <p class="lobby-p">Type the game code</p>
+      <div class="code" id="joinCode"></div>
+      <div class="pad" id="pad"></div>
+      <p class="lobby-p err" id="joinStatus"></p>
+    </div>
   </section>
 
   <!-- SETUP -->
@@ -141,6 +172,12 @@
 
   <!-- overlays -->
   <div class="overlay" id="banner"><div class="banner-inner"></div></div>
+  <div class="overlay" id="msgModal">
+    <div class="modal">
+      <h2 id="msgText"></h2>
+      <div class="row"><button class="btn blue" id="msgBtn"></button></div>
+    </div>
+  </div>
   <div class="overlay" id="quitModal">
     <div class="modal">
       <h2>Stop this game?</h2>
@@ -151,8 +188,10 @@
     </div>
   </div>
 
+  <script src="js/vendor/peerjs.min.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/ships.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/online.js"></script>
 </body>
 </html>
