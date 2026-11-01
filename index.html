@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Splash &amp; Boom!</title>
+  <meta name="theme-color" content="#0a5ad4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Splash & Boom">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-team="blue">
+  <div class="ocean">
+    <div class="rays"></div>
+    <div id="bubbles"></div>
+  </div>
+
+  <!-- TITLE -->
+  <section id="title" class="screen active">
+    <button class="icon-btn sound-btn" aria-label="Sound">🔊</button>
+    <div class="logo">
+      <span class="logo-1">Splash</span>
+      <span class="logo-amp">&amp;</span>
+      <span class="logo-2">Boom!</span>
+    </div>
+    <div class="hero-wrap">
+      <div class="hero-ship" id="heroShip"></div>
+      <div class="hero-waves"><div class="wave w1"></div><div class="wave w2"></div></div>
+    </div>
+    <button class="btn big yellow" id="playBtn">▶ PLAY</button>
+  </section>
+
+  <!-- MODE -->
+  <section id="mode" class="screen">
+    <div class="topbar">
+      <button class="icon-btn" data-go="title" aria-label="Back">⬅</button>
+      <h2>Who's playing?</h2>
+      <span class="icon-btn ghost"></span>
+    </div>
+    <div class="cards">
+      <button class="card" data-mode="robot">
+        <span class="card-art">🦈 <small>vs</small> 🤖</span>
+        <span class="card-title">Play Robot</span>
+      </button>
+      <button class="card" data-mode="friend">
+        <span class="card-art">🦈 <small>vs</small> 🐙</span>
+        <span class="card-title">2 Players</span>
+      </button>
+    </div>
+
+    <div class="names" id="names">
+      <label class="name blue"><span>🦈</span><input id="name0" maxlength="14" autocomplete="off"></label>
+      <label class="name red" id="name1wrap"><span>🐙</span><input id="name1" maxlength="14" autocomplete="off"></label>
+    </div>
+
+    <div class="opts">
+      <div class="seg" id="seaSeg">
+        <button data-sea="small"><b>Small sea</b><small>3 ships</small></button>
+        <button data-sea="big"><b>Big sea</b><small>5 ships</small></button>
+      </div>
+      <button class="toggle" id="extraToggle"><span class="knob"></span><span>Hit = shoot again</span></button>
+    </div>
+
+    <button class="btn big green" id="startBtn">⚓ START</button>
+  </section>
+
+  <!-- SETUP -->
+  <section id="setup" class="screen">
+    <div class="topbar">
+      <button class="icon-btn quit-btn" aria-label="Quit">✕</button>
+      <h2 class="pill" id="setupTitle"></h2>
+      <span class="icon-btn ghost"></span>
+    </div>
+    <p class="hint">Drag ships to move · Tap to turn</p>
+    <div class="board-wrap main"><div class="board" id="setupBoard"></div></div>
+    <div class="row">
+      <button class="btn blue" id="shuffleBtn">🎲 Mix</button>
+      <button class="btn green" id="readyBtn">✔ Ready!</button>
+    </div>
+  </section>
+
+  <!-- BATTLE -->
+  <section id="battle" class="screen">
+    <div class="topbar">
+      <button class="icon-btn quit-btn" aria-label="Quit">✕</button>
+      <h2 class="pill" id="turnText"></h2>
+      <button class="icon-btn sound-btn" aria-label="Sound">🔊</button>
+    </div>
+    <div class="arena">
+      <div class="main-col">
+        <div class="sea-label" id="bigLabel"></div>
+        <div class="board-wrap main" id="bigWrap">
+          <div class="board" id="bigBoard"></div>
+          <div class="callout" id="callout"></div>
+          <button class="btn yellow hidden" id="passBtn"></button>
+        </div>
+      </div>
+      <div class="side">
+        <div class="panel">
+          <div class="sea-label small" id="miniLabel"></div>
+          <div class="board-wrap mini"><div class="board" id="miniBoard"></div></div>
+        </div>
+        <div class="panel">
+          <div class="sea-label small">Ships to find</div>
+          <div class="tracker" id="tracker"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASS -->
+  <section id="pass" class="screen">
+    <div class="pass-card">
+      <div class="pass-avatar" id="passAvatar"></div>
+      <p>Pass the tablet to</p>
+      <h2 id="passName"></h2>
+      <p class="peek">No peeking! 🙈</p>
+      <button class="btn big green" id="passGo">I'm ready!</button>
+    </div>
+  </section>
+
+  <!-- WIN -->
+  <section id="win" class="screen">
+    <div class="win-card">
+      <div class="trophy" id="winIcon">🏆</div>
+      <h2 id="winText"></h2>
+      <p id="winStats"></p>
+      <div class="hero-ship small" id="winShip"></div>
+      <div class="row">
+        <button class="btn green big" id="againBtn">↻ Again!</button>
+        <button class="btn blue" data-go="title">🏠</button>
+      </div>
+    </div>
+    <div id="confetti"></div>
+  </section>
+
+  <!-- overlays -->
+  <div class="overlay" id="banner"><div class="banner-inner"></div></div>
+  <div class="overlay" id="quitModal">
+    <div class="modal">
+      <h2>Stop this game?</h2>
+      <div class="row">
+        <button class="btn red" id="quitYes">Yes, stop</button>
+        <button class="btn green" id="quitNo">Keep playing</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sound.js"></script>
+  <script src="js/ships.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

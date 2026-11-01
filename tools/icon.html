@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><style>
+html,body{margin:0;width:512px;height:512px;overflow:hidden}
+.i{width:512px;height:512px;position:relative;background:radial-gradient(90% 60% at 50% 0%,#8ae8ff,transparent 60%),linear-gradient(#23b7ff,#0b6fe0 55%,#0743a8)}
+.s{position:absolute;left:40px;top:150px;width:432px;transform:rotate(-3deg)} .smoke circle{fill:#eef4fa}
+.w{position:absolute;left:0;right:0;bottom:0;height:150px}
+.b{position:absolute;right:30px;top:24px;font-size:120px;transform:rotate(12deg)}
+</style></head><body><div class="i">
+<div class="b">💥</div>
+<div class="s" id="s"></div>
+<svg class="w" viewBox="0 0 512 150" preserveAspectRatio="none"><path d="M0,40 Q64,10 128,40 T256,40 T384,40 T512,40 V150 H0Z" fill="#1a8cf0"/><path d="M0,40 Q64,10 128,40 T256,40 T384,40 T512,40" stroke="#fff" stroke-width="10" fill="none" opacity=".85"/><path d="M0,95 Q64,70 128,95 T256,95 T384,95 T512,95 V150 H0Z" fill="#0d63c9"/></svg>
+</div><script src="../js/ships.js"></script><script>document.getElementById('s').innerHTML=heroShip()</script></body></html>
